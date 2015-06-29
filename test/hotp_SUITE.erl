@@ -67,8 +67,7 @@ t_new(_Cfg) ->
                            HOTP =   hotp:cons(Secret1, Count1, ExtraParams),
                     true = HOTP =/= hotp:cons(Secret1, Count2, ExtraParams),
                     true = HOTP =/= hotp:cons(Secret2, Count1, ExtraParams),
-                    true = HOTP =/= hotp:cons(Secret2, Count2, ExtraParams),
-                    Length = length(integer_to_list(HOTP))
+                    true = HOTP =/= hotp:cons(Secret2, Count2, ExtraParams)
                 end,
                 hotp_hmac:hash_algos_supported()
             )
