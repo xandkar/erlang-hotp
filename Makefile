@@ -5,7 +5,9 @@
 	dialyze \
 	test
 
-all: clean compile test dialyze
+all: travis_ci dialyze
+
+travis_ci: clean compile test
 
 compile:
 	@rebar compile
