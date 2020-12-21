@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ibnfirnas/erlang-hotp.svg?branch=master)](https://travis-ci.org/ibnfirnas/erlang-hotp)
+[![Build Status](https://travis-ci.org/xandkar/erlang-hotp.svg?branch=master)](https://travis-ci.org/xandkar/erlang-hotp)
 
 HOTP
 ====
