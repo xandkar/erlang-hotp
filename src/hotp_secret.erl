@@ -14,7 +14,7 @@ new() ->
     binary().
 new(HashAlgo) ->
     NumOfBytes = num_of_bytes_needed_for_hash_algo(HashAlgo),
-    crypto:rand_bytes(NumOfBytes).
+    crypto:strong_rand_bytes(NumOfBytes).
 
 num_of_bytes_needed_for_hash_algo(HashAlgo) ->
     case HashAlgo
