@@ -7,7 +7,6 @@ language:
 
 otp_release:
     - 17.0
-    - R16B02
 
 script:
     "make travis_ci"
