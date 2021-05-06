@@ -1,6 +1,6 @@
 {application, hotp,
  [
-  {description, "Erlang adaptation of HMAC-Based One-Time Password Algorithm"},
+  {description, "HMAC-Based One-Time Password Algorithm, as described in RFC 4226"},
   {vsn, "1.0.1"},
   {registered, []},
   {applications, [
@@ -8,5 +8,9 @@
                   stdlib,
                   crypto
                  ]},
-  {env, []}
+  {env, []},
+  {licenses, ["MIT"]},
+  {links, [
+    {"GitHub", "https://github.com/xandkar/erlang-hotp"}
+  ]}
  ]}.
