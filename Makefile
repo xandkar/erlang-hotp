@@ -1,3 +1,5 @@
+REBAR := rebar3
+
 .PHONY: \
 	all \
 	compile \
@@ -5,18 +7,19 @@
 	dialyze \
 	test
 
-all: travis_ci dialyze
-
-travis_ci: clean compile test
+all:
+	$(MAKE) compile
+	$(MAKE) dialyze
+	$(MAKE) test
 
 compile:
-	@rebar compile
+	@$(REBAR) compile
 
 clean:
-	@rebar clean
+	@$(REBAR) clean
 
 dialyze:
-	@dialyzer ebin/*.beam test/*.beam
+	@$(REBAR) do dialyzer
 
 test:
-	@rebar ct
+	@$(REBAR) ct
