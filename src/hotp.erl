@@ -9,8 +9,6 @@
 -export(
     [ cons/2
     , cons/3
-
-    , tests_rfc4226/0
     ]).
 
 -type extra_params() ::
@@ -53,6 +51,9 @@ int_truncate(Number, Length) ->
 %% Tests from RFC 4226 (https://tools.ietf.org/html/rfc4226#appendix-D)
 %% ============================================================================
 
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
 -record(test_case,
     { secret           :: binary()
     , count            :: integer()
@@ -62,10 +63,83 @@ int_truncate(Number, Length) ->
     , hotp             :: integer()
     }).
 
-tests_rfc4226() ->
-    lists:foreach(fun test_case_execute/1, test_cases_from_rfc4226()).
+all_test_() ->
+    Test =
+        fun(HashAlgo, Length) ->
+            Secret1 = hotp_secret:new(HashAlgo),
+            Secret2 = hotp_secret:new(HashAlgo),
+            Count1 = 1,
+            Count2 = 2,
+            Extra = #hotp_extra_params
+                { hash_algo = HashAlgo
+                , length    = Length
+                },
+            HOTP = hotp:cons(Secret1, Count1, Extra),
+            Title =
+                fun(Name) ->
+                    lists:flatten(io_lib:format(
+                        "~s. HashAlgo: ~p, Length: ~b, HOTP: ~b",
+                        [Name, HashAlgo, Length, HOTP]
+                    ))
+                end,
+            [
+                {
+                    Title("Same secret, same count"),
+                    ?_assertEqual(HOTP, hotp:cons(Secret1, Count1, Extra))
+                },
+                {
+                    Title("Same secret, diff count"),
+                    ?_assertNotEqual(HOTP, hotp:cons(Secret1, Count2, Extra))
+                },
+                {
+                    Title("Diff secret, same count"),
+                    ?_assertNotEqual(HOTP, hotp:cons(Secret2, Count1, Extra))
+                },
+                {
+                    Title("Diff secret, diff count"),
+                    ?_assertNotEqual(HOTP, hotp:cons(Secret2, Count2, Extra))
+                },
+                {
+                    Title("Length"),
+                    % Possible leading zeros will reduce the length
+                    ?_assert(Length >= length(integer_to_list(HOTP)))
+                }
+            ]
+        end,
+    Tests =
+        [
+            [
+                Test(HashAlgo, Length)
+            ||
+                HashAlgo <- hotp_hmac:hash_algos_supported(),
+                Length <- lists:seq(6, 100)
+            ]
+        |
+            tests_rfc4226()
+        ]
+        ++
+        [
+            {
+                "count_to_bin bit_size",
+                ?_assertEqual(64, bit_size(count_to_bin(1)))
+            }
+        ]
+        ++
+        [
+            ?_assertEqual(123456  , int_truncate( 10123456  , 6)),
+            ?_assertEqual(12345678, int_truncate( 1012345678, 8)),
+            ?_assertEqual(1234567 , int_truncate( 101234567 , 8)),
+            ?_assertEqual(123456  , int_truncate(100123456  , 8)),
+            ?_assertEqual(12345   , int_truncate(100012345  , 8)),
+            ?_assertEqual(1234567 , int_truncate(1001234567 , 8)),
+            ?_assertEqual(12345678, int_truncate(1000000000000012345678, 8))
+        ],
+    {inparallel, Tests}.
 
-test_case_execute(#test_case
+tests_rfc4226() ->
+    lists:map(fun test_case_make/1, test_cases_from_rfc4226()).
+
+test_case_make(#test_case
     { secret           = Secret
     , count            = Count
     , digest_full_hex  = DigestFullHex
@@ -77,10 +151,14 @@ test_case_execute(#test_case
     CountBin = count_to_bin(Count),
     Digest = hotp_hmac:cons(sha, Secret, CountBin),
     <<DigestFullDec:160/integer>> = Digest,
-    DigestFullHex = list_to_binary(io_lib:format("~40.16.0b", [DigestFullDec])),
-    DigestTruncDec = digest_truncate(Digest),
-    HOTP = int_truncate(DigestTruncDec, 6),
-    HOTP = cons(Secret, Count).
+    [
+        ?_assertEqual(64, bit_size(CountBin)),
+        ?_assertEqual(160, bit_size(Digest)),
+        ?_assertEqual(DigestFullHex, list_to_binary(io_lib:format("~40.16.0b", [DigestFullDec]))),
+        ?_assertEqual(DigestTruncDec, digest_truncate(Digest)),
+        ?_assertEqual(HOTP, int_truncate(DigestTruncDec, 6)),
+        ?_assertEqual(HOTP, cons(Secret, Count))
+    ].
 
 test_cases_from_rfc4226() ->
     Secret = <<"12345678901234567890">>,
@@ -95,3 +173,5 @@ test_cases_from_rfc4226() ->
     , #test_case{secret = Secret, count = 8, digest_full_hex = <<"1b3c89f65e6c9e883012052823443f048b4332db">> , digest_trunc_hex = <<"2823443f">> , digest_trunc_dec = 673399871  , hotp = 399871}
     , #test_case{secret = Secret, count = 9, digest_full_hex = <<"1637409809a679dc698207310c8c7fc07290d9e5">> , digest_trunc_hex = <<"2679dc69">> , digest_trunc_dec = 645520489  , hotp = 520489}
     ].
+
+-endif.

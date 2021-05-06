@@ -20,6 +20,7 @@ clean:
 
 dialyze:
 	@$(REBAR) do dialyzer
+	@$(REBAR) as test do dialyzer
 
 test:
-	@$(REBAR) ct
+	@$(REBAR) as test do eunit,cover

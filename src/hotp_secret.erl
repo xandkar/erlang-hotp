@@ -22,3 +22,17 @@ num_of_bytes_needed_for_hash_algo(HashAlgo) ->
     ;   sha256 -> 32
     ;   sha512 -> 64
     end.
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+all_test_() ->
+    Tests =
+        [
+            ?_assertNotEqual(new(), new())
+        |
+            [?_assertNotEqual(new(H), new(H)) || H <- hotp_hmac:hash_algos_supported()]
+        ],
+    {inparallel, Tests}.
+
+-endif.
