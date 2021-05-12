@@ -1,7 +1,7 @@
 {application, hotp,
  [
   {description, "HMAC-Based One-Time Password Algorithm, as described in RFC 4226"},
-  {vsn, "1.0.1"},
+  {vsn, "1.0.2"},
   {registered, []},
   {applications, [
                   kernel,

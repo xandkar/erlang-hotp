@@ -11,16 +11,18 @@
     , cons/3
     ]).
 
+-type t() :: pos_integer().
+
 -type extra_params() ::
     #hotp_extra_params{}.
 
--spec cons(binary(), integer()) ->
-    integer().
+-spec cons(Secret :: binary(), Count :: non_neg_integer()) ->
+    t().
 cons(<<Secret/binary>>, Count) ->
     cons(Secret, Count, #hotp_extra_params{}).
 
--spec cons(binary(), integer(), extra_params()) ->
-    integer().
+-spec cons(Secret :: binary(), Count :: non_neg_integer(), extra_params()) ->
+    t().
 cons(<<Secret/binary>>, Count, #hotp_extra_params
     { hash_algo = HashAlgo
     , length    = Length
@@ -31,7 +33,7 @@ cons(<<Secret/binary>>, Count, #hotp_extra_params
     Number = digest_truncate(Digest),
     int_truncate(Number, Length).
 
--spec count_to_bin(integer()) ->
+-spec count_to_bin(non_neg_integer()) ->
     binary().
 count_to_bin(Count) ->
     <<Count:64/integer>>.
@@ -56,11 +58,11 @@ int_truncate(Number, Length) ->
 
 -record(test_case,
     { secret           :: binary()
-    , count            :: integer()
+    , count            :: non_neg_integer()
     , digest_full_hex  :: binary()
     , digest_trunc_hex :: binary()
-    , digest_trunc_dec :: integer()
-    , hotp             :: integer()
+    , digest_trunc_dec :: pos_integer()
+    , hotp             :: t()
     }).
 
 all_test_() ->
